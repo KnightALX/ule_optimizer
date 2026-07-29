@@ -9,10 +9,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
-from ule_opt.logger import get_logger
-
-_logger = get_logger("ule_opt.parsers.path_extract")
-
 
 class PathNotFound(Exception):
     pass
@@ -90,9 +86,6 @@ def _build_cdl_graph(cdl) -> tuple[set[str], dict[str, list[str]]]:
             adj.setdefault(n, []).append(out_net)
             adj.setdefault(out_net, [])  # 保证输出节点也存在 key
 
-    x_edge_count = sum(len(v) for v in adj.values())
-    _logger.info("build_graph: %d nets, %d X-edges", len(nets), x_edge_count)
-
     # 兜底：出现但无出边的孤立 net 也加入 nets（便于"存在性"判定）
     return nets, adj
 
@@ -134,51 +127,24 @@ def extract_path_from_cdl(
     parent: dict[str, Optional[str]] = {source: None}
     from collections import deque
     q: deque[str] = deque([source])
-    _logger.info("BFS start: source=%s, target=%s", source, target)
-    levels = 0
-    target_reached = False
     while q:
         cur = q.popleft()
         if cur == target:
-            _logger.info(
-                "BFS step: cur=%s, target reached, break",
-                cur,
-            )
-            target_reached = True
             break
         for nxt in adj.get(cur, ()):
             if nxt in visited:
                 continue
             visited.add(nxt)
             parent[nxt] = cur
-            _logger.info(
-                "BFS step: cur=%s -> nxt=%s (parent[%s]=%s)",
-                cur, nxt, nxt, cur,
-            )
             q.append(nxt)
-        levels += 1
-        _logger.info(
-            "BFS step: cur=%s, visited=%d, queue=[%s]",
-            cur, len(visited), ", ".join(q),
-        )
 
     if target not in parent:
         raise PathNotFound(f"不可达: {source} → {target}")
-
-    _logger.info(
-        "BFS done: %d levels traversed, %d nodes visited",
-        levels, len(visited),
-    )
 
     # 重建路径（按 BFS 顺序）
     seq: list[str] = []
     cur: Optional[str] = target
     while cur is not None:
-        _logger.info(
-            "path rebuild: %s, parent=%s%s",
-            cur, parent[cur],
-            " (root)" if parent[cur] is None else "",
-        )
         seq.append(cur)
         cur = parent[cur]
     seq.reverse()
@@ -199,10 +165,5 @@ def extract_path_from_cdl(
             c_self=C0, r_self=r_self,
         )
         nodes.append(n)
-
-    _logger.info(
-        "final path: %s (%d nodes, %d edges)",
-        " -> ".join(seq), len(seq), len(seq) - 1,
-    )
 
     return ExtractedPath(nodes=nodes)
