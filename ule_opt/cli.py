@@ -28,11 +28,30 @@ def run(config: str):
         sys.exit(2)
 
     # 简化：从 path_nodes 构造 PathModel
-    from ule_opt.parsers.path_extract import extract_path
-    extracted = extract_path(
-        cdl=None, spef=None, node_list=cfg.path_nodes,
-        R0=cfg.R0, C0=cfg.C0_fF * 1e-15,
-    )
+    from ule_opt.parsers.path_extract import extract_path, extract_path_from_cdl, PathNotFound
+    if cfg.path_nodes:
+        # 显式 YAML 节点清单优先
+        extracted = extract_path(
+            cdl=None, spef=None, node_list=cfg.path_nodes,
+            R0=cfg.R0, C0=cfg.C0_fF * 1e-15,
+        )
+    else:
+        # 自动 BFS 推断
+        from ule_opt.parsers.cdl import parse_cdl as _parse_cdl
+        from pathlib import Path as _Path
+        cdl_path = _Path(cfg.cdl)
+        if not cdl_path.exists():
+            click.echo(f"[ERR] CDL 不存在: {cdl_path}", err=True)
+            sys.exit(2)
+        cdl_doc = _parse_cdl(cdl_path)
+        try:
+            extracted = extract_path_from_cdl(
+                cdl_doc, cfg.source, cfg.target,
+                R0=cfg.R0, C0=cfg.C0_fF * 1e-15,
+            )
+        except PathNotFound as e:
+            click.echo(f"[ERR] 路径推断失败: {e}", err=True)
+            sys.exit(2)
     nodes_c = [n.c_self for n in extracted.nodes]
     Rw = [n.r for n in extracted.nodes[:-1]]  # 段数 = N
     Cw = [n.c for n in extracted.nodes[:-1]]
