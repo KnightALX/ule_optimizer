@@ -70,8 +70,9 @@ def scenario1(
     # 已经在用户原始 Rw 中固定；C 维度我们已在 Step B 守恒。
     R_new = list(Rw)
 
-    # Step D: 一次额外松弛迭代修复归一化破坏（不缩 R，C 守恒仍成立）
-    C_new = relax(C_new, Cw, g, R_new, tau, max_iter=2, tol=0.02)
+    # Step D: 跳过二次 relax（避免破坏 Step D-extra 末次守恒归一化）
+    # 论文式 (16) 单次 5 次迭代已给出 C*，Step B 守恒 + Step D-extra β 归一化即终态。
+    C_new = list(C_new)
 
     # Step D-extra: 末次总 C 守恒归一化，吸收 Step D 二次 relax 引入的偏差
     final_total = sum(C_new[1:N])

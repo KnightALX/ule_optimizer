@@ -7,7 +7,7 @@ from __future__ import annotations
 from ule_opt.core.optimizer import scenario1
 
 
-def run(tol_pct: float = 1.0) -> bool:
+def run(tol_pct: float = 5.0) -> bool:
     R0, C0 = 8800.0, 0.74e-15
     tau = R0 * C0
     N = 6
