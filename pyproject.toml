@@ -1,0 +1,16 @@
+[project]
+name = "ule_opt"
+version = "0.1.0"
+description = "ULE 路径寻优 CLI"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.6",
+    "PyYAML>=6.0",
+    "click>=8.1",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8.0"]
+
+[project.scripts]
+ule_opt = "ule_opt.cli:main"
