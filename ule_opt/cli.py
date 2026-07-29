@@ -100,6 +100,9 @@ def run(config: str):
 @click.option("--case", "case", required=True, type=click.Choice(["table1", "scenario1", "scenario2"]))
 def verify(case: str):
     """运行验证用例。"""
+    from ule_opt.logger import get_logger
+    _logger = get_logger("ule_opt.cli")
+    _logger.info("verify subcommand: case=%s", case)
     from ule_opt.verify.table1 import run as run_table1
     from ule_opt.verify.scenario1 import run as run_s1
     from ule_opt.verify.scenario2 import run as run_s2
