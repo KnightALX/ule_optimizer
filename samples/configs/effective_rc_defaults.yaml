@@ -1,0 +1,23 @@
+# 有效 R/C 查表（YAML 驱动 + 內建默认）
+# 单位: Ceff (fF), Reff (kΩ)
+INV:
+  ceff_fF: 0.74
+  reff_kOhm: 8.8
+NAND2:
+  ceff_fF: 1.0
+  reff_kOhm: 11.7
+NAND3:
+  ceff_fF: 1.3
+  reff_kOhm: 14.0
+NOR2:
+  ceff_fF: 1.1
+  reff_kOhm: 12.0
+NOR3:
+  ceff_fF: 1.4
+  reff_kOhm: 14.5
+BUF:
+  ceff_fF: 0.9
+  reff_kOhm: 9.0
+CUSTOM:
+  ceff_fF: 0.74
+  reff_kOhm: 8.8
