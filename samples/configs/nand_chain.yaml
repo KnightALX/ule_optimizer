@@ -1,0 +1,13 @@
+cdl: samples/synthesized_nand_chain.cdl
+spef: samples/synthesized_nand_chain.spef
+source: A
+target: out
+path_nodes: [A, n1, n2, n3, n4, n5, n6, n7, n8, out]
+R0: 8800.0
+C0_fF: 0.74
+Rw_per_mm: 100.0
+Cw_per_mm_fF: 15.0
+scenario: scenario1
+c_finger_unit_fF: 0.5
+vt_threshold: 0.20
+effective_rc_yaml: ""
