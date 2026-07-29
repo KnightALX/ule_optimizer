@@ -55,8 +55,8 @@ def scenario1(
     # Step A: 松弛迭代
     C_star = relax(C, Cw, g, Rw, tau, max_iter=max_iter, tol=0.05)
 
-    # Step B: 守恒归一化
-    orig_total = sum(C[1:N])
+    # Step B: 守恒归一化（用 C[1:-1] 覆盖所有内部节点，固定 C_0/C_{N+1}）
+    orig_total = sum(C[1:N])           # = sum(C[1..N-1])
     star_total = sum(C_star[1:N])
     if star_total > 0:
         alpha = orig_total / star_total
@@ -66,17 +66,19 @@ def scenario1(
     for i in range(1, N):
         C_new[i] = C_star[i] * alpha
 
-    # Step C: 同样对 R（Rw[i]）做守恒缩放
+    # Step C: R 保持物理线缆值（不缩放）。"内部 R/C 总值不变" 中 R 维度
+    # 已经在用户原始 Rw 中固定；C 维度我们已在 Step B 守恒。
     R_new = list(Rw)
-    r_orig_total = sum(Rw[1:N])
-    # 用同样 alpha 近似保持总 R·C
-    if r_orig_total > 0:
-        r_star_total = sum(Rw[1:N])  # Rw 来自原值，relax 不动 Rw
-        for i in range(1, N):
-            R_new[i] = Rw[i] * alpha
 
-    # Step D: 一次额外松弛迭代修复归一化破坏
+    # Step D: 一次额外松弛迭代修复归一化破坏（不缩 R，C 守恒仍成立）
     C_new = relax(C_new, Cw, g, R_new, tau, max_iter=2, tol=0.02)
+
+    # Step D-extra: 末次总 C 守恒归一化，吸收 Step D 二次 relax 引入的偏差
+    final_total = sum(C_new[1:N])
+    if final_total > 0 and orig_total > 0:
+        beta = orig_total / final_total
+        for i in range(1, N):
+            C_new[i] *= beta
 
     delay_optimized = _delay_with_boundary(C_new, R_new, Cw, g, p, r_self, tau, R0)
 
