@@ -25,13 +25,17 @@ class EffectiveRCLookup:
         self.overrides = overrides or {}
 
     def lookup(self, gate_type: str) -> tuple[float, float]:
-        """返回 (Ceff in F, Reff in Ω)。"""
+        """返回 (Ceff in F, Reff in Ω)。
+
+        overrides 中的值单位为 fF / kΩ（与 YAML 一致）。
+        """
         if gate_type in self.overrides:
             ceff_fF, reff_kOhm = self.overrides[gate_type]
-            return ceff_fF, reff_kOhm
-        if gate_type == "CUSTOM":
-            return 1.0, 1.0
-        row = self.table.get(gate_type) or self.table.get("CUSTOM")
+            return ceff_fF * 1e-15, reff_kOhm * 1e3
+        row = self.table.get(gate_type)
+        if row is None:
+            # 未知门型 fallback 到 CUSTOM 默认行
+            row = self.table.get("CUSTOM")
         return row["ceff_fF"] * 1e-15, row["reff_kOhm"] * 1e3
 
     @classmethod
